@@ -42,6 +42,7 @@ app.post('/products/add', async (c) => {
       imageUrl: prod.imageUrl || null,
       price: prod.price || 'N/A',
       name: prod.title,
+      url: prod.url || null,
     }
 
     await db

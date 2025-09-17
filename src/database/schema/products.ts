@@ -25,6 +25,7 @@ export const products = sqliteTable(
     imageKey: text('image_key'),
     imageUrl: text('image_url'),
     price: text('price').notNull(),
+    url: text('url'),
     name: text('name').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' })
       .notNull()
