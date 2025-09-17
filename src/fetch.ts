@@ -15,7 +15,7 @@ app.post('/products/add', async (c) => {
 
   const { product_family, locale } = body
 
-  const res = await getProductLocatorMeta(product_family, locale)
+  const res = await getProductLocatorMeta(locale, product_family)
 
   if (!res) {
     return c.json({ message: 'Failed to fetch product locator meta' }, 500)
