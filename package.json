@@ -21,6 +21,7 @@
   "dependencies": {
     "drizzle-orm": "^0.44.5",
     "hono": "^4.9.7",
-    "ky": "^1.10.0"
+    "ky": "^1.10.0",
+    "object-deep-compare": "^2.0.0"
   }
 }

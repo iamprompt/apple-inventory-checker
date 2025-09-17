@@ -1,8 +1,11 @@
+import { and, eq, type InferSelectModel } from 'drizzle-orm'
+import { CompareValuesWithDetailedDifferences } from 'object-deep-compare'
 import { db } from './database'
 import { productAvailability } from './database/schema/productAvailability'
 import { products } from './database/schema/products'
 import { stores } from './database/schema/stores'
 import { getProductAvailability } from './modules/apple'
+import { sendMessage } from './modules/telegram'
 import { chunkArray } from './utils/array'
 
 export const scheduled: ExportedHandlerScheduledHandler<Env> = async (
@@ -10,23 +13,17 @@ export const scheduled: ExportedHandlerScheduledHandler<Env> = async (
   env,
   ctx,
 ): Promise<void> => {
-  const skuProducts = await db
-    .select({
-      id: products.id,
-      partNumber: products.partNumber,
-      locale: products.locale,
-    })
-    .from(products)
+  const skuProducts = await db.select().from(products)
 
   const productsByLocale = skuProducts.reduce(
     (acc, product) => {
       if (!acc.has(product.locale)) {
         acc.set(product.locale, new Map())
       }
-      acc.get(product.locale)!.set(product.partNumber, product.id)
+      acc.get(product.locale)!.set(product.partNumber, product)
       return acc
     },
-    new Map() as Map<string, Map<string, number>>,
+    new Map() as Map<string, Map<string, InferSelectModel<typeof products>>>,
   )
 
   for (const [locale, partNumbersMap] of productsByLocale.entries()) {
@@ -72,7 +69,7 @@ export const scheduled: ExportedHandlerScheduledHandler<Env> = async (
         (store) => {
           return Object.values(store.partsAvailability).map((part) => ({
             partNumber: part.partNumber,
-            productId: partNumbersMap.get(part.partNumber)!,
+            productId: partNumbersMap.get(part.partNumber)!.id,
             storeId: storeIdsMap.get(store.storeNumber)!,
             storePickEligible: part.storePickEligible,
             pickupSearchQuote: part.pickupSearchQuote,
@@ -85,6 +82,75 @@ export const scheduled: ExportedHandlerScheduledHandler<Env> = async (
       )
 
       for (const avail of updatedAvailability) {
+        const [before] = await db
+          .select()
+          .from(productAvailability)
+          .where(
+            and(
+              eq(productAvailability.locale, avail.locale),
+              eq(productAvailability.partNumber, avail.partNumber),
+              eq(productAvailability.storeId, avail.storeId),
+            ),
+          )
+          .limit(1)
+
+        if (before) {
+          const beforeObj = {
+            storePickEligible: Boolean(before.storePickEligible),
+            pickupSearchQuote: before.pickupSearchQuote,
+            pickupType: before.pickupType,
+            pickupDisplay: before.pickupDisplay,
+            buyability: Boolean(before.buyability),
+          }
+
+          const afterObj = {
+            storePickEligible: Boolean(avail.storePickEligible),
+            pickupSearchQuote: avail.pickupSearchQuote,
+            pickupType: avail.pickupType,
+            pickupDisplay: avail.pickupDisplay,
+            buyability: Boolean(avail.buyability),
+          }
+
+          const diff = CompareValuesWithDetailedDifferences(beforeObj, afterObj)
+
+          if (diff.length === 0) {
+            continue
+          }
+
+          const product = partNumbersMap.get(avail.partNumber)!
+
+          console.log(diff)
+          const textLines = diff.map((d) => {
+            switch (d.path) {
+              case 'storePickEligible': {
+                return `Store Pick Eligible: ${String(d.oldValue)} -> ${String(
+                  d.newValue,
+                )}`
+              }
+              case 'buyability': {
+                return `Buyability: ${String(d.oldValue)} -> ${String(
+                  d.newValue,
+                )}`
+              }
+              case 'pickupSearchQuote': {
+                return `Pickup Search Quote: ${d.oldValue} -> ${d.newValue}`
+              }
+              case 'pickupType': {
+                return `Pickup Type: ${d.oldValue} -> ${d.newValue}`
+              }
+              case 'pickupDisplay': {
+                return `Pickup Display: ${d.oldValue} -> ${d.newValue}`
+              }
+              default:
+                return `${d.path}: ${d.oldValue} -> ${d.newValue}`
+            }
+          })
+
+          const message = `📦 *Product Availability Updated*\nTitle: ${product.name}\nPart Number: ${product.partNumber}\n${textLines.join('\n')}\nLink: ${product.url}`
+
+          await sendMessage(env.TELEGRAM_CHANNEL_CHAT_ID, message)
+        }
+
         await db
           .insert(productAvailability)
           .values(avail)
