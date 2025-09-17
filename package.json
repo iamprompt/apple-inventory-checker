@@ -6,10 +6,20 @@
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev --test-scheduled",
 		"start": "wrangler dev --test-scheduled",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"lint": "biome check --write",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "wrangler d1 migrations apply \"apple-inventory\""
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.2.4",
+		"drizzle-kit": "^0.31.4",
 		"typescript": "^5.5.2",
 		"wrangler": "^4.37.1"
+	},
+	"dependencies": {
+		"drizzle-orm": "^0.44.5",
+		"hono": "^4.9.7",
+		"ky": "^1.10.0"
 	}
 }

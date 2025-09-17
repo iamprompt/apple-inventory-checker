@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `unique_locale_part_number` ON `products` (`locale`,`part_number`);
