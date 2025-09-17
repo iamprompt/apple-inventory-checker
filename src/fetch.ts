@@ -12,7 +12,6 @@ app.get('/', (c) => c.text('Hello! This is Apple Inventory Checker.'))
 
 app.post('/products/add', async (c) => {
   const body = await c.req.json()
-  console.log(body)
 
   const { product_family, locale } = body
 
@@ -23,7 +22,6 @@ app.post('/products/add', async (c) => {
   }
 
   const prods = mappingProductLocatorMeta(res)
-  console.log(prods)
 
   for (const prod of prods) {
     const updatedProduct: InferInsertModel<typeof products> = {
