@@ -1,5 +1,6 @@
 import { and, eq, type InferSelectModel } from 'drizzle-orm'
 import { CompareValuesWithDetailedDifferences } from 'object-deep-compare'
+import { env } from './config'
 import { db } from './database'
 import { productAvailability } from './database/schema/productAvailability'
 import { products } from './database/schema/products'
@@ -8,11 +9,9 @@ import { getProductAvailability } from './modules/apple'
 import { sendMessage } from './modules/telegram'
 import { chunkArray } from './utils/array'
 
-export const scheduled: ExportedHandlerScheduledHandler<Env> = async (
-  event,
-  env,
-  ctx,
-): Promise<void> => {
+export const scheduled = async (): Promise<void> => {
+  console.log('Running scheduled task...')
+
   const skuProducts = await db.select().from(products)
 
   const productsByLocale = skuProducts.reduce(

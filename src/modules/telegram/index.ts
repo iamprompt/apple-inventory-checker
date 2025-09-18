@@ -1,5 +1,5 @@
-import { env } from 'cloudflare:workers'
 import ky from 'ky'
+import { env } from '../../config'
 
 export const sendMessage = async (chatId: string, text: string) => {
   const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`

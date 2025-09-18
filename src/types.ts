@@ -1,6 +1,7 @@
+import type { HttpBindings } from '@hono/node-server'
 import type { RequestIdVariables } from 'hono/request-id'
 
 export type App = {
-  Bindings: Env
+  Bindings: HttpBindings
   Variables: RequestIdVariables
 }
