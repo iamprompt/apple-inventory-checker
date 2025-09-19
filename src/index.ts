@@ -58,6 +58,11 @@ app.post('/products/add', async (c) => {
   return c.json({ message: 'Add product endpoint' })
 })
 
+app.post('/update', async (c) => {
+  await scheduled()
+  return c.json({ message: 'Update endpoint' })
+})
+
 nodeCron.schedule('* * * * *', scheduled)
 
 const server = serve(app, (info) => {

@@ -1,7 +1,11 @@
 import ky from 'ky'
 import { env } from '../../config'
 
-export const sendMessage = async (chatId: string, text: string) => {
+export const sendMessage = async (
+  chatId: string,
+  text: string,
+  additionalOptions: Record<string, any> = {},
+) => {
   const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`
 
   try {
@@ -9,6 +13,8 @@ export const sendMessage = async (chatId: string, text: string) => {
       json: {
         chat_id: chatId,
         text,
+        parse_mode: 'MarkdownV2',
+        ...additionalOptions,
       },
     })
 

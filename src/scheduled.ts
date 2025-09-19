@@ -36,7 +36,8 @@ export const scheduled = async (): Promise<void> => {
         continue
       }
 
-      const storeIdsMap = new Map<string, number>()
+      const storesMap = new Map<string, InferSelectModel<typeof stores>>()
+      const storesIdsMap = new Map<number, InferSelectModel<typeof stores>>()
 
       for (const store of availability.pickupMessage.stores) {
         const [storeRecord] = await db
@@ -61,7 +62,8 @@ export const scheduled = async (): Promise<void> => {
           continue
         }
 
-        storeIdsMap.set(store.storeNumber, storeRecord.id)
+        storesMap.set(store.storeNumber, storeRecord)
+        storesIdsMap.set(storeRecord.id, storeRecord)
       }
 
       const updatedAvailability = availability.pickupMessage.stores.flatMap(
@@ -69,7 +71,7 @@ export const scheduled = async (): Promise<void> => {
           return Object.values(store.partsAvailability).map((part) => ({
             partNumber: part.partNumber,
             productId: partNumbersMap.get(part.partNumber)?.id,
-            storeId: storeIdsMap.get(store.storeNumber)!,
+            storeId: storesMap.get(store.storeNumber)?.id!,
             storePickEligible: part.storePickEligible,
             pickupSearchQuote: part.pickupSearchQuote,
             pickupType: part.pickupType,
@@ -118,7 +120,6 @@ export const scheduled = async (): Promise<void> => {
 
           const product = partNumbersMap.get(avail.partNumber)!
 
-          console.log(diff)
           const textLines = diff.map((d) => {
             switch (d.path) {
               case 'storePickEligible': {
@@ -145,9 +146,13 @@ export const scheduled = async (): Promise<void> => {
             }
           })
 
-          const message = `📦 *Product Availability Updated*\nTitle: ${product.name}\nPart Number: ${product.partNumber}\n${textLines.join('\n')}\nLink: ${product.url}`
+          const message = `🚨 *Apple Store Availability Update* 🚨\n*Product:* ${product.name} (${product.partNumber})\n*Store:* ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n*Changes:*\n${textLines.map((line) => `- ${line}`).join('\n')}`
 
-          await sendMessage(env.TELEGRAM_CHANNEL_CHAT_ID, message)
+          await sendMessage(env.TELEGRAM_CHANNEL_CHAT_ID, message, {
+            reply_markup: {
+              inline_keyboard: [[{ text: 'View Product', url: product.url }]],
+            },
+          })
         }
 
         await db
