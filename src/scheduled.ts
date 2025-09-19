@@ -19,7 +19,7 @@ export const scheduled = async (): Promise<void> => {
       if (!acc.has(product.locale)) {
         acc.set(product.locale, new Map())
       }
-      acc.get(product.locale)!.set(product.partNumber, product)
+      acc.get(product.locale)?.set(product.partNumber, product)
       return acc
     },
     new Map() as Map<string, Map<string, InferSelectModel<typeof products>>>,
@@ -68,7 +68,7 @@ export const scheduled = async (): Promise<void> => {
         (store) => {
           return Object.values(store.partsAvailability).map((part) => ({
             partNumber: part.partNumber,
-            productId: partNumbersMap.get(part.partNumber)!.id,
+            productId: partNumbersMap.get(part.partNumber)?.id,
             storeId: storeIdsMap.get(store.storeNumber)!,
             storePickEligible: part.storePickEligible,
             pickupSearchQuote: part.pickupSearchQuote,

@@ -1,11 +1,5 @@
 import { sql } from 'drizzle-orm'
-import {
-  integer,
-  numeric,
-  sqliteTable,
-  text,
-  unique,
-} from 'drizzle-orm/sqlite-core'
+import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core'
 
 export const products = sqliteTable(
   'products',

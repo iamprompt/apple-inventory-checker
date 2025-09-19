@@ -10,7 +10,7 @@ export const mappingProductLocatorMeta = (data: ProductLocatorMeta) => {
     ]),
   )
 
-  const dimensionsCapacityMap = new Map<string, string>(
+  const _dimensionsCapacityMap = new Map<string, string>(
     dimensionsVariations.dimensionCapacity.map((capacity) => [
       capacity.key,
       capacity.value || '',
