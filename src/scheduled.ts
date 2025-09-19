@@ -26,7 +26,7 @@ export const scheduled = async (): Promise<void> => {
   )
 
   for (const [locale, partNumbersMap] of productsByLocale.entries()) {
-    const partNumbersInChunks = chunkArray([...partNumbersMap.keys()], 10)
+    const partNumbersInChunks = chunkArray([...partNumbersMap.keys()], 1)
 
     for (const chunk of partNumbersInChunks) {
       const availability = await getProductAvailability(locale, chunk)

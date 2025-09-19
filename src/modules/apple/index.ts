@@ -31,8 +31,16 @@ export const getProductAvailability = async (
   partNumbers: string[],
 ) => {
   try {
+    console.log(
+      `Fetching availability for locale: ${locale}, parts: ${partNumbers.join(', ')}`,
+    )
+
     const response = await ky.get<FulfillmentResponse>(
       getFulfillmentUrl(locale, partNumbers),
+      {
+        retry: 3,
+        timeout: 10000,
+      },
     )
 
     const json = await response.json()
