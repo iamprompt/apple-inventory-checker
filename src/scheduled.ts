@@ -97,17 +97,17 @@ export const scheduled = async (): Promise<void> => {
 
         if (before) {
           const beforeObj = {
-            storePickEligible: Boolean(before.storePickEligible),
+            // storePickEligible: Boolean(before.storePickEligible),
             pickupSearchQuote: before.pickupSearchQuote,
-            pickupType: before.pickupType,
+            // pickupType: before.pickupType,
             pickupDisplay: before.pickupDisplay,
             buyability: Boolean(before.buyability),
           }
 
           const afterObj = {
-            storePickEligible: Boolean(avail.storePickEligible),
+            // storePickEligible: Boolean(avail.storePickEligible),
             pickupSearchQuote: avail.pickupSearchQuote,
-            pickupType: avail.pickupType,
+            // pickupType: avail.pickupType,
             pickupDisplay: avail.pickupDisplay,
             buyability: Boolean(avail.buyability),
           }
@@ -146,12 +146,22 @@ export const scheduled = async (): Promise<void> => {
             }
           })
 
-          const message = `🚨 *Apple Store Availability Update* 🚨\n*Product:* ${product.name} (${product.partNumber})\n*Store:* ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n*Changes:*\n${textLines.map((line) => `- ${line}`).join('\n')}`
+          const message = (() => {
+            if (avail.buyability) {
+              return `🟢 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 ${avail.pickupSearchQuote}`
+            }
+
+            return `🔴 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 ${avail.pickupSearchQuote}`
+          })()
 
           await sendMessage(env.TELEGRAM_CHANNEL_CHAT_ID, message, {
-            reply_markup: {
-              inline_keyboard: [[{ text: 'View Product', url: product.url }]],
-            },
+            ...(avail.buyability
+              ? {
+                  reply_markup: {
+                    inline_keyboard: [[{ text: 'ดูสินค้า', url: product.url }]],
+                  },
+                }
+              : {}),
           })
         }
 
