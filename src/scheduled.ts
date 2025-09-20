@@ -101,7 +101,7 @@ export const scheduled = async (): Promise<void> => {
             pickupSearchQuote: before.pickupSearchQuote,
             // pickupType: before.pickupType,
             pickupDisplay: before.pickupDisplay,
-            buyability: Boolean(before.buyability),
+            // buyability: Boolean(before.buyability),
           }
 
           const afterObj = {
@@ -109,7 +109,7 @@ export const scheduled = async (): Promise<void> => {
             pickupSearchQuote: avail.pickupSearchQuote,
             // pickupType: avail.pickupType,
             pickupDisplay: avail.pickupDisplay,
-            buyability: Boolean(avail.buyability),
+            // buyability: Boolean(avail.buyability),
           }
 
           const diff = CompareValuesWithDetailedDifferences(beforeObj, afterObj)
@@ -120,42 +120,18 @@ export const scheduled = async (): Promise<void> => {
 
           const product = partNumbersMap.get(avail.partNumber)!
 
-          const textLines = diff.map((d) => {
-            switch (d.path) {
-              case 'storePickEligible': {
-                return `Store Pick Eligible: ${String(d.oldValue)} -> ${String(
-                  d.newValue,
-                )}`
-              }
-              case 'buyability': {
-                return `Buyability: ${String(d.oldValue)} -> ${String(
-                  d.newValue,
-                )}`
-              }
-              case 'pickupSearchQuote': {
-                return `Pickup Search Quote: ${d.oldValue} -> ${d.newValue}`
-              }
-              case 'pickupType': {
-                return `Pickup Type: ${d.oldValue} -> ${d.newValue}`
-              }
-              case 'pickupDisplay': {
-                return `Pickup Display: ${d.oldValue} -> ${d.newValue}`
-              }
-              default:
-                return `${d.path}: ${d.oldValue} -> ${d.newValue}`
-            }
-          })
+          const isAvailable = avail.pickupDisplay === 'available'
 
           const message = (() => {
-            if (avail.buyability) {
-              return `🟢 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 ${avail.pickupDisplay} (${avail.pickupSearchQuote})`
+            if (isAvailable) {
+              return `🟢 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Available (${avail.pickupSearchQuote})`
             }
 
-            return `🔴 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 ${avail.pickupDisplay} (${avail.pickupSearchQuote})`
+            return `🔴 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Unavailable (${avail.pickupSearchQuote})`
           })()
 
           await sendMessage(env.TELEGRAM_CHANNEL_CHAT_ID, message, {
-            ...(avail.buyability
+            ...(isAvailable && product.url
               ? {
                   reply_markup: {
                     inline_keyboard: [[{ text: 'ดูสินค้า', url: product.url }]],
