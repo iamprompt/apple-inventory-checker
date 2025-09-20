@@ -148,10 +148,10 @@ export const scheduled = async (): Promise<void> => {
 
           const message = (() => {
             if (avail.buyability) {
-              return `🟢 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 ${avail.pickupSearchQuote}`
+              return `🟢 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 ${avail.pickupDisplay} (${avail.pickupSearchQuote})`
             }
 
-            return `🔴 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 ${avail.pickupSearchQuote}`
+            return `🔴 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 ${avail.pickupDisplay} (${avail.pickupSearchQuote})`
           })()
 
           await sendMessage(env.TELEGRAM_CHANNEL_CHAT_ID, message, {
