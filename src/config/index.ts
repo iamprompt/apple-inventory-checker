@@ -5,6 +5,7 @@ export const env = createEnv({
   server: {
     TELEGRAM_BOT_TOKEN: z.string(),
     TELEGRAM_CHANNEL_CHAT_ID: z.string(),
+    TELEGRAM_PRO_MAX_CHANNEL_CHAT_ID: z.string().optional(),
     DB_URL: z.string(),
   },
   runtimeEnv: process.env,

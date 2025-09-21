@@ -139,6 +139,21 @@ export const scheduled = async (): Promise<void> => {
                 }
               : {}),
           })
+
+          if (
+            product.name.includes('Pro Max') &&
+            env.TELEGRAM_PRO_MAX_CHANNEL_CHAT_ID
+          ) {
+            await sendMessage(env.TELEGRAM_PRO_MAX_CHANNEL_CHAT_ID, message, {
+              ...(isAvailable && product.url
+                ? {
+                    reply_markup: {
+                      inline_keyboard: [[{ text: 'ดูสินค้า', url: product.url }]],
+                    },
+                  }
+                : {}),
+            })
+          }
         }
 
         await db
