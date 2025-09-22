@@ -130,11 +130,13 @@ export const scheduled = async (): Promise<void> => {
             return `🔴 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Unavailable (${avail.pickupSearchQuote})`
           })()
 
+          const productUrl = `https://www.apple.com/${product.locale}/shop/product/${product.partNumber}`
+
           await sendMessage(env.TELEGRAM_CHANNEL_CHAT_ID, message, {
             ...(isAvailable && product.url
               ? {
                   reply_markup: {
-                    inline_keyboard: [[{ text: 'ดูสินค้า', url: product.url }]],
+                    inline_keyboard: [[{ text: 'ดูสินค้า', url: productUrl }]],
                   },
                 }
               : {}),
@@ -148,7 +150,7 @@ export const scheduled = async (): Promise<void> => {
               ...(isAvailable && product.url
                 ? {
                     reply_markup: {
-                      inline_keyboard: [[{ text: 'ดูสินค้า', url: product.url }]],
+                      inline_keyboard: [[{ text: 'ดูสินค้า', url: productUrl }]],
                     },
                   }
                 : {}),
