@@ -6,6 +6,7 @@ import { productAvailability } from './database/schema/productAvailability'
 import { products } from './database/schema/products'
 import { stores } from './database/schema/stores'
 import { getProductAvailability } from './modules/apple'
+import { getAppleCookies } from './modules/apple/crawler'
 import { sendMessage } from './modules/telegram'
 import { chunkArray } from './utils/array'
 
@@ -14,9 +15,9 @@ export const scheduled = async (): Promise<void> => {
 
   const skuProducts = await db.select().from(products)
 
-  const cookies = [] as string[]
-  // const cookies = await getAppleCookies()
-  // console.log('Fetched Apple cookies:', cookies)
+  // const cookies = [] as string[]
+  const cookies = await getAppleCookies()
+  console.log('Fetched Apple cookies:', cookies)
 
   const productsByLocale = skuProducts.reduce(
     (acc, product) => {

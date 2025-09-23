@@ -10,7 +10,7 @@
     "lint": "biome check --write",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit push",
-    "docker:build": "docker buildx build -t registry.iamprompt.me/apple-inventory-checker --platform linux/amd64 .",
+    "docker:build": "docker buildx build -t iamprompt/apple-inventory-checker --push --platform linux/amd64 .",
     "docker:build:arm": "docker buildx build -t registry.iamprompt.me/apple-inventory-checker --platform linux/arm64 ."
   },
   "devDependencies": {
