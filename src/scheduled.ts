@@ -14,6 +14,10 @@ export const scheduled = async (): Promise<void> => {
 
   const skuProducts = await db.select().from(products)
 
+  const cookies = [] as string[]
+  // const cookies = await getAppleCookies()
+  // console.log('Fetched Apple cookies:', cookies)
+
   const productsByLocale = skuProducts.reduce(
     (acc, product) => {
       if (!acc.has(product.locale)) {
@@ -29,7 +33,9 @@ export const scheduled = async (): Promise<void> => {
     const partNumbersInChunks = chunkArray([...partNumbersMap.keys()], 5)
 
     for (const chunk of partNumbersInChunks) {
-      const availability = await getProductAvailability(locale, chunk)
+      const availability = await getProductAvailability(locale, chunk, {
+        cookies: cookies.length > 0 ? cookies : [env.APPLE_COOKIES || ''],
+      })
 
       if (!availability) {
         console.error(`No availability data for locale: ${locale}`)

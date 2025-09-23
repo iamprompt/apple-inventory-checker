@@ -29,6 +29,7 @@ export const getProductLocatorMeta = async (
 export const getProductAvailability = async (
   locale: string = 'th',
   partNumbers: string[],
+  { cookies }: { cookies?: string[] } = {},
 ) => {
   try {
     console.log(
@@ -38,6 +39,12 @@ export const getProductAvailability = async (
     const response = await ky.get<FulfillmentResponse>(
       getFulfillmentUrl(locale, partNumbers),
       {
+        headers: {
+          'user-agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+          Cookie: cookies?.join('; '),
+        },
+        cache: 'no-cache',
         retry: 3,
         timeout: 10000,
       },

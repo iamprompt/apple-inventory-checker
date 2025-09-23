@@ -7,6 +7,7 @@ export const env = createEnv({
     TELEGRAM_CHANNEL_CHAT_ID: z.string(),
     TELEGRAM_PRO_MAX_CHANNEL_CHAT_ID: z.string().optional(),
     DB_URL: z.string(),
+    APPLE_COOKIES: z.string().optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

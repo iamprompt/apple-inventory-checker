@@ -10,7 +10,8 @@
     "lint": "biome check --write",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit push",
-    "docker:build": "docker buildx build -t registry.iamprompt.me/apple-inventory-checker --push --platform linux/amd64 ."
+    "docker:build": "docker buildx build -t registry.iamprompt.me/apple-inventory-checker --platform linux/amd64 .",
+    "docker:build:arm": "docker buildx build -t registry.iamprompt.me/apple-inventory-checker --platform linux/arm64 ."
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.4",
@@ -31,6 +32,7 @@
     "ky": "^1.10.0",
     "node-cron": "^4.2.1",
     "object-deep-compare": "^2.0.0",
+    "playwright": "^1.55.1",
     "tsx": "^4.20.5",
     "zod": "^4.1.9"
   }
