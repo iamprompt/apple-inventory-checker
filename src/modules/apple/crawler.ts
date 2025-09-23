@@ -18,20 +18,20 @@ export const getAppleCookies = async (): Promise<string[]> => {
     })
     const page = await context.newPage()
 
-    page.on('request', (request) => {
-      // Log all requests to the console
-      console.log('Request:', request.method(), request.url())
-    })
+    // page.on('request', (request) => {
+    //   // Log all requests to the console
+    //   console.log('Request:', request.method(), request.url())
+    // })
 
-    page.on('response', (response) => {
-      // Log all responses to the console
-      console.log(
-        'Response:',
-        response.status(),
-        response.url(),
-        response.headers(),
-      )
-    })
+    // page.on('response', (response) => {
+    //   // Log all responses to the console
+    //   console.log(
+    //     'Response:',
+    //     response.status(),
+    //     response.url(),
+    //     response.headers(),
+    //   )
+    // })
 
     await context.clearCookies()
 
