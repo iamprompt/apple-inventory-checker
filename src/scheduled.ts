@@ -10,8 +10,10 @@ import { getAppleCookies } from './modules/apple/crawler'
 import { sendMessage } from './modules/telegram'
 import { chunkArray } from './utils/array'
 
+const usableCookies: string[] = []
+
 export const scheduled = async (): Promise<void> => {
-  console.log('Running scheduled task...')
+  console.log('Running scheduled task at', new Date().toISOString())
 
   const skuProducts = await db.select().from(products)
 
@@ -41,6 +43,11 @@ export const scheduled = async (): Promise<void> => {
       if (!availability) {
         console.error(`No availability data for locale: ${locale}`)
         continue
+      }
+
+      if (availability === 541) {
+        console.error('Blocked by Apple, skipping further requests.')
+        break
       }
 
       const storesMap = new Map<string, InferSelectModel<typeof stores>>()

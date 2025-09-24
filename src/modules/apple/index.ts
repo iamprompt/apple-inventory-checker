@@ -1,4 +1,4 @@
-import ky from 'ky'
+import ky, { HTTPError } from 'ky'
 import type { FulfillmentResponse } from './types/fulfillment'
 import type { ProductLocatorMetaResponse } from './types/productLocatorMeta'
 
@@ -21,7 +21,7 @@ export const getProductLocatorMeta = async (
 
     return body.productLocatorOverlayData.productLocatorMeta
   } catch (error) {
-    console.error('Error fetching product locator meta:', error)
+    // console.error('Error fetching product locator meta:', error)
     return null
   }
 }
@@ -54,7 +54,12 @@ export const getProductAvailability = async (
 
     return json.body.content
   } catch (error) {
-    console.error('Error fetching product availability:', error)
+    if (error instanceof HTTPError) {
+      if (error.response.status === 541) {
+        console.error('Received HTTP 541 error - likely blocked by Apple')
+        return 541
+      }
+    }
     return null
   }
 }
