@@ -40,7 +40,6 @@ export const getAppleCookies = async (): Promise<string[]> => {
 
     // Wait for the page to load completely
     await page.waitForLoadState('networkidle')
-    // await page.waitForTimeout(5000) // Wait for 0.5 seconds to ensure all cookies are set
     await page.waitForResponse((response) =>
       response.url().includes('fulfillment-messages'),
     )
@@ -48,19 +47,10 @@ export const getAppleCookies = async (): Promise<string[]> => {
 
     await page.reload()
     await page.waitForLoadState('networkidle')
-    // await page.waitForTimeout(5000) // Wait for 0.5 seconds to ensure all cookies are set
     await page.waitForResponse((response) =>
       response.url().includes('fulfillment-messages'),
     )
     console.log('Cookies retrieved successfully.')
-
-    await page.reload()
-    await page.waitForLoadState('networkidle')
-    // await page.waitForTimeout(5000) // Wait for 0.5 seconds to ensure all cookies are set
-    await page.waitForResponse((response) =>
-      response.url().includes('fulfillment-messages'),
-    )
-    console.log('Final page reload completed.')
 
     // Extract cookies
     const cookies = await context.cookies()
