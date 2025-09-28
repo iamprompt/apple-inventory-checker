@@ -1,13 +1,14 @@
 import { chromium } from 'playwright'
 import { env } from '../../config'
 
+const browser = await chromium.launch({
+  headless: env.HEADLESS_BROWSER,
+  args: ['--disable-web-security'],
+})
+
 export const getAppleCookies = async (): Promise<string[]> => {
   try {
     console.log('Fetching Apple cookies using Playwright...')
-    const browser = await chromium.launch({
-      headless: env.HEADLESS_BROWSER,
-      args: ['--disable-web-security'],
-    })
     const context = await browser.newContext({
       userAgent:
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
@@ -58,7 +59,7 @@ export const getAppleCookies = async (): Promise<string[]> => {
       (cookie) => `${cookie.name}=${cookie.value}`,
     )
 
-    await browser.close()
+    await context.close()
     return cookieStrings
   } catch (error) {
     console.error('Error fetching Apple cookies:', error)
