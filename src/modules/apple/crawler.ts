@@ -1,13 +1,25 @@
-import { chromium } from 'playwright'
+import { type Browser, chromium } from 'playwright'
 import { env } from '../../config'
 
-const browser = await chromium.launch({
-  headless: env.HEADLESS_BROWSER,
-  args: ['--disable-web-security'],
-})
+let cachedBrowser: Browser
+
+const launchBrowser = async () => {
+  if (cachedBrowser) {
+    return cachedBrowser
+  }
+
+  cachedBrowser = await chromium.launch({
+    headless: env.HEADLESS_BROWSER,
+    args: ['--disable-web-security'],
+  })
+
+  return cachedBrowser
+}
 
 export const getAppleCookies = async (): Promise<string[]> => {
   try {
+    const browser = await launchBrowser()
+
     console.log('Fetching Apple cookies using Playwright...')
     const context = await browser.newContext({
       userAgent:
