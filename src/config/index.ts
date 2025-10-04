@@ -12,6 +12,7 @@ export const env = createEnv({
       .string()
       .transform((val) => val === 'true')
       .default(true),
+    CRON_SCHEDULE: z.string().optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

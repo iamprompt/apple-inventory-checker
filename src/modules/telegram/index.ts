@@ -22,6 +22,8 @@ export const sendMessage = async (
 
     const json = await response.json()
 
+    await new Promise((resolve) => setTimeout(resolve, 1000)) // Rate limit handling
+
     return json
   } catch (error) {
     console.error('Error sending Telegram message:', error)

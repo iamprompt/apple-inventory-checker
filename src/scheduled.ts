@@ -6,11 +6,12 @@ import { productAvailability } from './database/schema/productAvailability'
 import { products } from './database/schema/products'
 import { stores } from './database/schema/stores'
 import { getProductAvailability } from './modules/apple'
-import { getAppleCookies } from './modules/apple/crawler'
+import {
+  clearCachedCookies,
+  getFulfillmentCookies,
+} from './modules/apple/cookies'
 import { sendMessage } from './modules/telegram'
 import { chunkArray } from './utils/array'
-
-const usableCookies: string[] = []
 
 export const scheduled = async (): Promise<void> => {
   console.log('Running scheduled task at', new Date().toISOString())
@@ -18,8 +19,12 @@ export const scheduled = async (): Promise<void> => {
   const skuProducts = await db.select().from(products)
 
   // const cookies = [] as string[]
-  const cookies = await getAppleCookies()
+  const cookies = await getFulfillmentCookies()
   console.log('Fetched Apple cookies:', cookies)
+  if (!cookies || cookies.length === 0) {
+    console.error('No valid Apple cookies available, aborting task.')
+    return
+  }
 
   const productsByLocale = skuProducts.reduce(
     (acc, product) => {
@@ -37,7 +42,7 @@ export const scheduled = async (): Promise<void> => {
 
     for (const chunk of partNumbersInChunks) {
       const availability = await getProductAvailability(locale, chunk, {
-        cookies: cookies.length > 0 ? cookies : [env.APPLE_COOKIES || ''],
+        cookies,
       })
 
       if (!availability) {
@@ -46,7 +51,8 @@ export const scheduled = async (): Promise<void> => {
       }
 
       if (availability === 541) {
-        console.error('Blocked by Apple, skipping further requests.')
+        clearCachedCookies()
+        console.error('Apple returned status 541, clearing cached cookies.')
         break
       }
 

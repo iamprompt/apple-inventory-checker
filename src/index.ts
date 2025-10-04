@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import type { InferInsertModel } from 'drizzle-orm'
 import { Hono } from 'hono'
 import nodeCron from 'node-cron'
+import { env } from './config'
 import { db } from './database'
 import { products } from './database/schema/products'
 import { getProductLocatorMeta } from './modules/apple'
@@ -63,7 +64,9 @@ app.post('/update', async (c) => {
   return c.json({ message: 'Update endpoint' })
 })
 
-nodeCron.schedule('* * * * *', scheduled)
+if (env.CRON_SCHEDULE) {
+  nodeCron.schedule('* * * * *', scheduled)
+}
 
 const server = serve(app, (info) => {
   console.log(`Server running on http://${info.address}:${info.port}`)
