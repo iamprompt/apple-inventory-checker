@@ -1,1 +1,0 @@
-ALTER TABLE `product_availability` ADD `product_id` integer REFERENCES products(id);

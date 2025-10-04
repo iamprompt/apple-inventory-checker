@@ -4,7 +4,7 @@ let cachedCookies: string[] | null = null
 
 export const getFulfillmentCookies = async (): Promise<string[] | null> => {
   console.log('Retrieving cached Apple cookies...')
-  if (cachedCookies) {
+  if (cachedCookies && cachedCookies.length > 0) {
     console.log('Using cached Apple cookies.')
     return cachedCookies
   }

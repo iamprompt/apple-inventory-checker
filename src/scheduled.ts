@@ -1,8 +1,12 @@
 import { and, eq, type InferSelectModel } from 'drizzle-orm'
-import { CompareValuesWithDetailedDifferences } from 'object-deep-compare'
+import {
+  CompareValuesWithDetailedDifferences,
+  type DetailedDifference,
+} from 'object-deep-compare'
 import { env } from './config'
 import { db } from './database'
 import { productAvailability } from './database/schema/productAvailability'
+import { productAvailabilityHistory } from './database/schema/productAvailabilityHistory'
 import { products } from './database/schema/products'
 import { stores } from './database/schema/stores'
 import { getProductAvailability } from './modules/apple'
@@ -115,44 +119,58 @@ export const scheduled = async (): Promise<void> => {
           )
           .limit(1)
 
+        let differences: DetailedDifference[] = []
+
         if (before) {
           const beforeObj = {
-            // storePickEligible: Boolean(before.storePickEligible),
             pickupSearchQuote: before.pickupSearchQuote,
-            // pickupType: before.pickupType,
             pickupDisplay: before.pickupDisplay,
-            // buyability: Boolean(before.buyability),
           }
 
           const afterObj = {
-            // storePickEligible: Boolean(avail.storePickEligible),
             pickupSearchQuote: avail.pickupSearchQuote,
-            // pickupType: avail.pickupType,
             pickupDisplay: avail.pickupDisplay,
-            // buyability: Boolean(avail.buyability),
           }
 
-          const diff = CompareValuesWithDetailedDifferences(beforeObj, afterObj)
+          differences = CompareValuesWithDetailedDifferences(
+            beforeObj,
+            afterObj,
+          )
+        }
 
-          if (diff.length === 0) {
-            continue
+        if (differences.length === 0) {
+          continue
+        }
+
+        const product = partNumbersMap.get(avail.partNumber)!
+
+        const isAvailable = avail.pickupDisplay === 'available'
+
+        const message = (() => {
+          if (isAvailable) {
+            return `🟢 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Available (${avail.pickupSearchQuote})`
           }
 
-          const product = partNumbersMap.get(avail.partNumber)!
+          return `🔴 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Unavailable (${avail.pickupSearchQuote})`
+        })()
 
-          const isAvailable = avail.pickupDisplay === 'available'
+        const productUrl = `https://www.apple.com/${product.locale}/shop/product/${product.partNumber}`
 
-          const message = (() => {
-            if (isAvailable) {
-              return `🟢 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Available (${avail.pickupSearchQuote})`
-            }
+        await sendMessage(env.TELEGRAM_CHANNEL_CHAT_ID, message, {
+          ...(isAvailable && product.url
+            ? {
+                reply_markup: {
+                  inline_keyboard: [[{ text: 'ดูสินค้า', url: productUrl }]],
+                },
+              }
+            : {}),
+        })
 
-            return `🔴 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Unavailable (${avail.pickupSearchQuote})`
-          })()
-
-          const productUrl = `https://www.apple.com/${product.locale}/shop/product/${product.partNumber}`
-
-          await sendMessage(env.TELEGRAM_CHANNEL_CHAT_ID, message, {
+        if (
+          product.name.includes('Pro Max') &&
+          env.TELEGRAM_PRO_MAX_CHANNEL_CHAT_ID
+        ) {
+          await sendMessage(env.TELEGRAM_PRO_MAX_CHANNEL_CHAT_ID, message, {
             ...(isAvailable && product.url
               ? {
                   reply_markup: {
@@ -161,24 +179,9 @@ export const scheduled = async (): Promise<void> => {
                 }
               : {}),
           })
-
-          if (
-            product.name.includes('Pro Max') &&
-            env.TELEGRAM_PRO_MAX_CHANNEL_CHAT_ID
-          ) {
-            await sendMessage(env.TELEGRAM_PRO_MAX_CHANNEL_CHAT_ID, message, {
-              ...(isAvailable && product.url
-                ? {
-                    reply_markup: {
-                      inline_keyboard: [[{ text: 'ดูสินค้า', url: productUrl }]],
-                    },
-                  }
-                : {}),
-            })
-          }
         }
 
-        await db
+        const [updatedAvail] = await db
           .insert(productAvailability)
           .values(avail)
           .onConflictDoUpdate({
@@ -189,6 +192,14 @@ export const scheduled = async (): Promise<void> => {
             ],
             set: avail,
           })
+          .returning()
+
+        await db.insert(productAvailabilityHistory).values({
+          ...updatedAvail,
+          id: undefined,
+          createdAt: undefined,
+          updatedAt: undefined,
+        })
       }
     }
   }

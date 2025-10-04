@@ -1,1 +1,0 @@
-ALTER TABLE `product_availability` ADD `buyability` integer DEFAULT false;
