@@ -75,6 +75,9 @@ export const getNewAppleCookies = async (): Promise<string[] | null> => {
       if (response.url().includes('fulfillment-messages')) {
         console.log('Response:', response.status(), response.url())
       }
+      if (response.url().includes('wd=')) {
+        console.log('WD Response:', response.status(), response.url())
+      }
     })
 
     // Remove the webdriver property to avoid detection
@@ -83,9 +86,7 @@ export const getNewAppleCookies = async (): Promise<string[] | null> => {
     )
 
     console.log('Navigating to Apple website to retrieve cookies...')
-    await page.goto(
-      'https://www.apple.com/shop/buy-iphone/iphone-17-pro/6.3-inch-display-256gb-silver-unlocked',
-    )
+    await page.goto('https://www.apple.com/th/shop/product/MFYX4ZP/A')
 
     const maxRetries = 3
     let attempt = 0
