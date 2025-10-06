@@ -25,10 +25,10 @@ export const scheduled = async (): Promise<void> => {
   // const cookies = [] as string[]
   const cookies = await getFulfillmentCookies()
   console.log('Fetched Apple cookies:', cookies)
-  if (!cookies || cookies.length === 0) {
-    console.error('No valid Apple cookies available, aborting task.')
-    return
-  }
+  // if (!cookies || cookies.length === 0) {
+  //   console.error('No valid Apple cookies available, aborting task.')
+  //   return
+  // }
 
   const productsByLocale = skuProducts.reduce(
     (acc, product) => {
@@ -46,7 +46,8 @@ export const scheduled = async (): Promise<void> => {
 
     for (const chunk of partNumbersInChunks) {
       const availability = await getProductAvailability(locale, chunk, {
-        cookies,
+        cookies:
+          cookies && cookies.length > 0 ? cookies : [env.APPLE_COOKIES || ''],
       })
 
       if (!availability) {
