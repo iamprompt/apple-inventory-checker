@@ -84,7 +84,7 @@ export const getNewAppleCookies = async (): Promise<string[] | null> => {
 
     console.log('Navigating to Apple website to retrieve cookies...')
     await page.goto(
-      'https://www.apple.com/th/shop/buy-iphone/iphone-17-pro/%E0%B8%88%E0%B8%AD%E0%B8%A0%E0%B8%B2%E0%B8%9E%E0%B8%82%E0%B8%99%E0%B8%B2%E0%B8%94-6.9-%E0%B8%99%E0%B8%B4%E0%B9%89%E0%B8%A7-256gb-%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B9%80%E0%B8%87%E0%B8%B4%E0%B8%99%E0%B9%80%E0%B8%82%E0%B9%89%E0%B8%A1',
+      'https://www.apple.com/shop/buy-iphone/iphone-17-pro/6.3-inch-display-256gb-silver-unlocked',
     )
 
     const maxRetries = 3
