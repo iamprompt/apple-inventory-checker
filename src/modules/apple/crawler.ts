@@ -66,6 +66,10 @@ export const getNewAppleCookies = async (): Promise<string[] | null> => {
         Pragma: 'no-cache',
         'sec-ch-ua':
           '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'sec-fetch-dest': 'empty',
+        'x-skip-redirect': 'true',
       },
     })
 

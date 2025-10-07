@@ -13,6 +13,7 @@ export const env = createEnv({
       .transform((val) => val === 'true')
       .default(true),
     CRON_SCHEDULE: z.string().optional(),
+    PORT: z.coerce.number().default(3000),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

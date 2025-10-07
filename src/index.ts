@@ -68,9 +68,15 @@ if (env.CRON_SCHEDULE) {
   nodeCron.schedule('* * * * *', scheduled)
 }
 
-const server = serve(app, (info) => {
-  console.log(`Server running on http://${info.address}:${info.port}`)
-})
+const server = serve(
+  {
+    fetch: app.fetch,
+    port: env.PORT,
+  },
+  (info) => {
+    console.log(`Server running on http://${info.address}:${info.port}`)
+  },
+)
 
 // graceful shutdown
 process.on('SIGINT', () => {
