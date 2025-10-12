@@ -1,0 +1,2 @@
+ALTER TABLE "product_availability" RENAME COLUMN "pickup_display" TO "availability_text";--> statement-breakpoint
+ALTER TABLE "product_availability_history" RENAME COLUMN "pickup_display" TO "availability_text";

@@ -1,18 +1,22 @@
 import { sql } from 'drizzle-orm'
-import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core'
+import {
+  pgTable,
+  serial,
+  timestamp,
+  unique,
+  varchar,
+} from 'drizzle-orm/pg-core'
 
-export const stores = sqliteTable(
+export const stores = pgTable(
   'stores',
   {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    storeId: text('store_id').notNull(),
-    name: text('name').notNull(),
-    latitude: text('latitude').notNull(),
-    longitude: text('longitude').notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp' })
+    id: serial('id').primaryKey(),
+    storeId: varchar('store_id', { length: 10 }).notNull(),
+    name: varchar('name', { length: 100 }).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: integer('updated_at', { mode: 'timestamp' })
+    updatedAt: timestamp('updated_at', { mode: 'date' })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`)
       .$onUpdate(() => new Date()),

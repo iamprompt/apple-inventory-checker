@@ -1,9 +1,75 @@
 {
-  "id": "4d0d46be-f803-4aa8-9b42-667eb5c7830b",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "21d4f73c-7889-43cd-9229-6e40d412f3eb",
+  "prevId": "13e6877d-5d9b-48c9-a2b3-283aabcd2cc3",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.notification_channels": {
+      "name": "notification_channels",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "NotificationChannelType",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "targets": {
+          "name": "targets",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'"
+        },
+        "products": {
+          "name": "products",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.product_availability": {
       "name": "product_availability",
       "schema": "",
@@ -38,33 +104,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "store_pick_eligible": {
-          "name": "store_pick_eligible",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "pickup_search_quote": {
-          "name": "pickup_search_quote",
+        "availability_text": {
+          "name": "availability_text",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "pickup_type": {
-          "name": "pickup_type",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pickup_display": {
-          "name": "pickup_display",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "buyability": {
-          "name": "buyability",
+        "is_available": {
+          "name": "is_available",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -72,14 +119,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
@@ -164,33 +211,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "store_pick_eligible": {
-          "name": "store_pick_eligible",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "pickup_search_quote": {
-          "name": "pickup_search_quote",
+        "availability_text": {
+          "name": "availability_text",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "pickup_type": {
-          "name": "pickup_type",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pickup_display": {
-          "name": "pickup_display",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "buyability": {
-          "name": "buyability",
+        "is_available": {
+          "name": "is_available",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -198,14 +226,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
@@ -361,14 +389,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
@@ -415,14 +443,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
@@ -445,7 +473,16 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.NotificationChannelType": {
+      "name": "NotificationChannelType",
+      "schema": "public",
+      "values": [
+        "TELEGRAM",
+        "BARK"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "roles": {},

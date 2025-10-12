@@ -1,3 +1,4 @@
+import type { PickupMessageRecommendations } from './types/pickupMessageRecommendations'
 import type { ProductLocatorMeta } from './types/productLocatorMeta'
 
 export const mappingProductLocatorMeta = (data: ProductLocatorMeta) => {
@@ -64,4 +65,37 @@ export const mappingProductLocatorMeta = (data: ProductLocatorMeta) => {
   }))
 
   return products
+}
+
+export const processPickupMessageAvailabilityByPartNumber = (
+  partNumber: string,
+  data: PickupMessageRecommendations['body']['PickupMessage'],
+) => {
+  const { stores } = data
+
+  if (!stores) {
+    return []
+  }
+
+  const storeList = stores.map((store) => {
+    const partAvailability = store.partsAvailability[partNumber]
+
+    if (!partAvailability) {
+      return {
+        storeName: store.storeName,
+        storeNumber: store.storeNumber,
+        availabilityText: 'N/A',
+        isAvailable: false,
+      }
+    }
+
+    return {
+      storeName: store.storeName,
+      storeNumber: store.storeNumber,
+      availabilityText: partAvailability.pickupSearchQuote,
+      isAvailable: partAvailability.pickupDisplay === 'available',
+    }
+  })
+
+  return storeList
 }

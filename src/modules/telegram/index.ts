@@ -1,12 +1,12 @@
 import ky, { HTTPError } from 'ky'
-import { env } from '../../config'
 
 export const sendMessage = async (
+  apiToken: string,
   chatId: string,
   text: string,
   additionalOptions: Record<string, any> = {},
 ) => {
-  const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`
+  const url = `https://api.telegram.org/bot${apiToken}/sendMessage`
 
   try {
     const response = await ky.post(url, {

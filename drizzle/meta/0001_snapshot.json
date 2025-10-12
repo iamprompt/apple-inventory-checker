@@ -1,6 +1,6 @@
 {
-  "id": "4d0d46be-f803-4aa8-9b42-667eb5c7830b",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "a499382e-e1f4-4ecd-bf45-73a293f3747c",
+  "prevId": "4d0d46be-f803-4aa8-9b42-667eb5c7830b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -38,33 +38,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "store_pick_eligible": {
-          "name": "store_pick_eligible",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "pickup_search_quote": {
-          "name": "pickup_search_quote",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pickup_type": {
-          "name": "pickup_type",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
         "pickup_display": {
           "name": "pickup_display",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "buyability": {
-          "name": "buyability",
+        "is_available": {
+          "name": "is_available",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -164,33 +145,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "store_pick_eligible": {
-          "name": "store_pick_eligible",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "pickup_search_quote": {
-          "name": "pickup_search_quote",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pickup_type": {
-          "name": "pickup_type",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
         "pickup_display": {
           "name": "pickup_display",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "buyability": {
-          "name": "buyability",
+        "is_available": {
+          "name": "is_available",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,

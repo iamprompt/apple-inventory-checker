@@ -1,5 +1,6 @@
 import ky, { HTTPError } from 'ky'
 import type { FulfillmentResponse } from './types/fulfillment'
+import type { PickupMessageRecommendations } from './types/pickupMessageRecommendations'
 import type { ProductLocatorMetaResponse } from './types/productLocatorMeta'
 
 export const getProductLocatorMeta = async (
@@ -137,4 +138,30 @@ export const getAvailabilityMessageUrl = (
   }
 
   return url.toString()
+}
+
+export const getPickupMessageAvailability = async (
+  locale: string = 'th',
+  partNumber: string,
+  location: string = '10600',
+) => {
+  try {
+    const response = await ky.get<PickupMessageRecommendations>(
+      `https://www.apple.com/${locale}/shop/pickup-message-recommendations`,
+      {
+        searchParams: new URLSearchParams({
+          product: partNumber,
+          location,
+        }),
+      },
+    )
+
+    // https://www.apple.com/th/shop/pickup-message-recommendations
+    const json = await response.json()
+
+    return json.body.PickupMessage
+  } catch (error) {
+    console.error('Error fetching pickup message availability:', error)
+    return null
+  }
 }

@@ -1,30 +1,38 @@
 import { sql } from 'drizzle-orm'
-import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core'
+import {
+  boolean,
+  pgTable,
+  serial,
+  timestamp,
+  unique,
+  varchar,
+} from 'drizzle-orm/pg-core'
 
-export const products = sqliteTable(
+export const products = pgTable(
   'products',
   {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    locale: text('locale').notNull(),
-    basePartNumber: text('base_part_number').notNull(),
-    partNumber: text('part_number').notNull(),
-    capacity: text('capacity').notNull(),
-    capacityKey: text('capacity_key'),
-    screenSize: text('screen_size').notNull(),
-    screenSizeKey: text('screen_size_key'),
-    color: text('color').notNull(),
-    colorKey: text('color_key'),
-    carrierModel: text('carrier_model'),
-    carrierModelKey: text('carrier_model_key'),
-    imageKey: text('image_key'),
-    imageUrl: text('image_url'),
-    price: text('price').notNull(),
-    url: text('url'),
-    name: text('name').notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp' })
+    id: serial('id').primaryKey(),
+    locale: varchar('locale', { length: 10 }).notNull(),
+    basePartNumber: varchar('base_part_number', { length: 10 }).notNull(),
+    partNumber: varchar('part_number', { length: 20 }).notNull(),
+    capacity: varchar('capacity').notNull(),
+    capacityKey: varchar('capacity_key'),
+    screenSize: varchar('screen_size').notNull(),
+    screenSizeKey: varchar('screen_size_key'),
+    color: varchar('color').notNull(),
+    colorKey: varchar('color_key'),
+    carrierModel: varchar('carrier_model'),
+    carrierModelKey: varchar('carrier_model_key'),
+    imageKey: varchar('image_key'),
+    imageUrl: varchar('image_url'),
+    price: varchar('price').notNull(),
+    url: varchar('url'),
+    name: varchar('name').notNull(),
+    isUpdateing: boolean('is_updating').default(false).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: integer('updated_at', { mode: 'timestamp' })
+    updatedAt: timestamp('updated_at', { mode: 'date' })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`)
       .$onUpdate(() => new Date()),

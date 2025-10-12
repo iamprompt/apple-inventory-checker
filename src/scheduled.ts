@@ -1,34 +1,33 @@
-import { and, eq, type InferSelectModel } from 'drizzle-orm'
+import {
+  and,
+  eq,
+  type InferInsertModel,
+  type InferSelectModel,
+  sql,
+} from 'drizzle-orm'
 import {
   CompareValuesWithDetailedDifferences,
   type DetailedDifference,
 } from 'object-deep-compare'
-import { env } from './config'
+import { NotificationChannelType } from './constants/notification'
 import { db } from './database'
+import { notificationChannels } from './database/schema/notificationChannels'
 import { productAvailability } from './database/schema/productAvailability'
 import { productAvailabilityHistory } from './database/schema/productAvailabilityHistory'
 import { products } from './database/schema/products'
 import { stores } from './database/schema/stores'
-import { getProductAvailability } from './modules/apple'
-import {
-  clearCachedCookies,
-  getFulfillmentCookies,
-} from './modules/apple/cookies'
+import { getPickupMessageAvailability } from './modules/apple'
+import { processPickupMessageAvailabilityByPartNumber } from './modules/apple/helper'
+import { sendBarkNotification } from './modules/bark'
 import { sendMessage } from './modules/telegram'
-import { chunkArray } from './utils/array'
 
 export const scheduled = async (): Promise<void> => {
   console.log('Running scheduled task at', new Date().toISOString())
 
-  const skuProducts = await db.select().from(products)
-
-  // const cookies = [] as string[]
-  const cookies = await getFulfillmentCookies()
-  console.log('Fetched Apple cookies:', cookies)
-  // if (!cookies || cookies.length === 0) {
-  //   console.error('No valid Apple cookies available, aborting task.')
-  //   return
-  // }
+  const skuProducts = await db
+    .select()
+    .from(products)
+    .where(eq(products.isUpdateing, true))
 
   const productsByLocale = skuProducts.reduce(
     (acc, product) => {
@@ -42,43 +41,37 @@ export const scheduled = async (): Promise<void> => {
   )
 
   for (const [locale, partNumbersMap] of productsByLocale.entries()) {
-    const partNumbersInChunks = chunkArray([...partNumbersMap.keys()], 5)
-
-    for (const chunk of partNumbersInChunks) {
-      const availability = await getProductAvailability(locale, chunk, {
-        cookies:
-          cookies && cookies.length > 0 ? cookies : [env.APPLE_COOKIES || ''],
-      })
+    for (const [partNumber, product] of partNumbersMap.entries()) {
+      const availability = await getPickupMessageAvailability(
+        locale,
+        partNumber,
+        '10600',
+      )
 
       if (!availability) {
         console.error(`No availability data for locale: ${locale}`)
         continue
       }
 
-      if (availability === 541) {
-        clearCachedCookies()
-        console.error('Apple returned status 541, clearing cached cookies.')
-        break
-      }
+      const prodAvailability = processPickupMessageAvailabilityByPartNumber(
+        partNumber,
+        availability,
+      )
 
       const storesMap = new Map<string, InferSelectModel<typeof stores>>()
       const storesIdsMap = new Map<number, InferSelectModel<typeof stores>>()
 
-      for (const store of availability.pickupMessage.stores) {
+      for (const store of prodAvailability) {
         const [storeRecord] = await db
           .insert(stores)
           .values({
             storeId: store.storeNumber,
             name: store.storeName,
-            latitude: String(store.retailStore.latitude),
-            longitude: String(store.retailStore.longitude),
           })
           .onConflictDoUpdate({
             target: stores.storeId,
             set: {
               name: store.storeName,
-              latitude: String(store.retailStore.latitude),
-              longitude: String(store.retailStore.longitude),
             },
           })
           .returning()
@@ -91,21 +84,16 @@ export const scheduled = async (): Promise<void> => {
         storesIdsMap.set(storeRecord.id, storeRecord)
       }
 
-      const updatedAvailability = availability.pickupMessage.stores.flatMap(
-        (store) => {
-          return Object.values(store.partsAvailability).map((part) => ({
-            partNumber: part.partNumber,
-            productId: partNumbersMap.get(part.partNumber)?.id,
-            storeId: storesMap.get(store.storeNumber)?.id!,
-            storePickEligible: part.storePickEligible,
-            pickupSearchQuote: part.pickupSearchQuote,
-            pickupType: part.pickupType,
-            pickupDisplay: part.pickupDisplay,
-            buyability: part.buyability.isBuyable,
-            locale,
-          }))
-        },
-      )
+      const updatedAvailability = prodAvailability.map<
+        InferInsertModel<typeof productAvailability>
+      >((product) => ({
+        partNumber: partNumber,
+        productId: partNumbersMap.get(partNumber)?.id,
+        storeId: storesMap.get(product.storeNumber)?.id!,
+        availabilityText: product.availabilityText,
+        isAvailable: product.isAvailable,
+        locale,
+      }))
 
       for (const avail of updatedAvailability) {
         const [before] = await db
@@ -124,13 +112,13 @@ export const scheduled = async (): Promise<void> => {
 
         if (before) {
           const beforeObj = {
-            pickupSearchQuote: before.pickupSearchQuote,
-            pickupDisplay: before.pickupDisplay,
+            availabilityText: before.availabilityText,
+            isAvailable: before.isAvailable,
           }
 
           const afterObj = {
-            pickupSearchQuote: avail.pickupSearchQuote,
-            pickupDisplay: avail.pickupDisplay,
+            availabilityText: avail.availabilityText,
+            isAvailable: avail.isAvailable,
           }
 
           differences = CompareValuesWithDetailedDifferences(
@@ -139,47 +127,74 @@ export const scheduled = async (): Promise<void> => {
           )
         }
 
-        if (differences.length === 0) {
+        if (before && differences.length === 0) {
           continue
         }
 
         const product = partNumbersMap.get(avail.partNumber)!
 
-        const isAvailable = avail.pickupDisplay === 'available'
-
         const message = (() => {
-          if (isAvailable) {
-            return `🟢 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Available (${avail.pickupSearchQuote})`
+          if (avail.isAvailable) {
+            return `🟢 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Available (${avail.availabilityText})`
           }
 
-          return `🔴 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Unavailable (${avail.pickupSearchQuote})`
+          return `🔴 ${product.name} (${product.partNumber})\n📍 ${storesIdsMap.get(avail.storeId)?.name} (${storesIdsMap.get(avail.storeId)?.storeId})\n📱 Unavailable (${avail.availabilityText})`
         })()
 
         const productUrl = `https://www.apple.com/${product.locale}/shop/product/${product.partNumber}`
 
-        await sendMessage(env.TELEGRAM_CHANNEL_CHAT_ID, message, {
-          ...(isAvailable && product.url
-            ? {
-                reply_markup: {
-                  inline_keyboard: [[{ text: 'ดูสินค้า', url: productUrl }]],
-                },
-              }
-            : {}),
-        })
+        const notiChannels = await db
+          .select()
+          .from(notificationChannels)
+          .where(
+            and(
+              eq(notificationChannels.isActive, true),
+              sql`${notificationChannels.productIds} @> ${sql`to_jsonb(ARRAY[${product.id}]::int[])`}`,
+            ),
+          )
 
-        if (
-          product.name.includes('Pro Max') &&
-          env.TELEGRAM_PRO_MAX_CHANNEL_CHAT_ID
-        ) {
-          await sendMessage(env.TELEGRAM_PRO_MAX_CHANNEL_CHAT_ID, message, {
-            ...(isAvailable && product.url
-              ? {
+        console.log(notiChannels)
+
+        for (const channel of notiChannels) {
+          switch (channel.type) {
+            case NotificationChannelType.TELEGRAM: {
+              if (!channel.token || !channel.targets.length) {
+                console.error(
+                  `Telegram channel ${channel.id} is missing token or chatId`,
+                )
+                continue
+              }
+
+              for (const target of channel.targets) {
+                await sendMessage(channel.token, target, message, {
                   reply_markup: {
                     inline_keyboard: [[{ text: 'ดูสินค้า', url: productUrl }]],
                   },
-                }
-              : {}),
-          })
+                })
+              }
+
+              break
+            }
+            case NotificationChannelType.BARK: {
+              if (!channel.targets.length) {
+                console.error(
+                  `Bark channel ${channel.id} is missing device key`,
+                )
+                continue
+              }
+
+              await sendBarkNotification({
+                title: 'Apple Inventory Checker',
+                body: message,
+                url: productUrl,
+                id: `${avail.partNumber}-${avail.storeId}`,
+                device_keys: channel.targets,
+                level: avail.isAvailable ? 'critical' : 'active',
+                volume: 10,
+              })
+              break
+            }
+          }
         }
 
         const [updatedAvail] = await db

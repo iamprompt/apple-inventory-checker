@@ -1,9 +1,10 @@
-FROM mcr.microsoft.com/playwright:v1.55.1-noble AS base
+FROM node:24-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 FROM base AS deps
+RUN apk add --no-cache gcompat
 WORKDIR /app
 
 COPY package*json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -23,10 +24,13 @@ RUN pnpm prune --prod
 FROM base AS runner
 WORKDIR /app
 
-COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=builder /app/dist /app/dist
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 hono
 
-USER root
+COPY --from=prod-deps --chown=hono:nodejs /app/node_modules /app/node_modules
+COPY --from=builder --chown=hono:nodejs /app/dist /app/dist
+
+USER hono
 EXPOSE 3000
 
 CMD ["node", "/app/dist/index.js"]

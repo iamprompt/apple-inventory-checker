@@ -1,6 +1,6 @@
 {
-  "id": "4d0d46be-f803-4aa8-9b42-667eb5c7830b",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "1c969776-8d47-437d-9815-7e57b3f09fad",
+  "prevId": "e181bbc4-7447-4b8b-affb-32e24ec96b20",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -38,33 +38,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "store_pick_eligible": {
-          "name": "store_pick_eligible",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "pickup_search_quote": {
-          "name": "pickup_search_quote",
+        "availability_text": {
+          "name": "availability_text",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "pickup_type": {
-          "name": "pickup_type",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pickup_display": {
-          "name": "pickup_display",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "buyability": {
-          "name": "buyability",
+        "is_available": {
+          "name": "is_available",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -72,14 +53,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
@@ -164,33 +145,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "store_pick_eligible": {
-          "name": "store_pick_eligible",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "pickup_search_quote": {
-          "name": "pickup_search_quote",
+        "availability_text": {
+          "name": "availability_text",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "pickup_type": {
-          "name": "pickup_type",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pickup_display": {
-          "name": "pickup_display",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "buyability": {
-          "name": "buyability",
+        "is_available": {
+          "name": "is_available",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -198,14 +160,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
@@ -361,14 +323,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
@@ -415,14 +377,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
