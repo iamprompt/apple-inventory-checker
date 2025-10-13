@@ -263,13 +263,6 @@ export const scheduled = async (): Promise<void> => {
           ),
         )
 
-      if (notiChannels.length === 0) {
-        console.log(
-          'No active notification channels found for this product, skipping notification.',
-        )
-        continue
-      }
-
       console.log(`Sending notifications to ${notiChannels.length} channels`)
 
       for (const channel of notiChannels) {
