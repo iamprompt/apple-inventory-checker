@@ -45,6 +45,7 @@ app.post('/products/add', async (c) => {
       price: prod.price || 'N/A',
       name: prod.title,
       url: prod.url || null,
+      family: product_family,
     }
 
     await db

@@ -172,16 +172,25 @@ export const scheduled = async (): Promise<void> => {
       return acc
     }, new Map())
 
-    const updatedAvailability = partAvailabilitiesMap.map<
-      InferInsertModel<typeof productAvailability>
-    >((product) => ({
-      partNumber: product.partNumber,
-      productId: productsMap.get(product.partNumber)!.id,
-      storeId: storeNumberMap.get(product.storeNumber)!,
-      availabilityText: product.availabilityText,
-      isAvailable: product.isAvailable,
-      locale,
-    }))
+    const updatedAvailability = partAvailabilitiesMap
+      .map<InferInsertModel<typeof productAvailability> | null>((product) => {
+        if (!productsMap.has(product.partNumber)) {
+          return null
+        }
+
+        return {
+          partNumber: product.partNumber,
+          productId: productsMap.get(product.partNumber)!.id,
+          storeId: storeNumberMap.get(product.storeNumber)!,
+          availabilityText: product.availabilityText,
+          isAvailable: product.isAvailable,
+          locale,
+        }
+      })
+      .filter(
+        (item): item is InferInsertModel<typeof productAvailability> =>
+          item !== null,
+      )
 
     for (const avail of updatedAvailability) {
       const [before] = await db

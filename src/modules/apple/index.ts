@@ -146,6 +146,10 @@ export const getPickupMessageAvailability = async (
   store: string = 'R733' /* Apple Central World */,
 ) => {
   try {
+    console.log(
+      `Fetching pickup message availability for locale: ${locale}, part: ${partNumber}, store: ${store}`,
+    )
+
     const response = await ky.get<PickupMessageRecommendations>(
       `https://www.apple.com/${locale}/shop/pickup-message-recommendations`,
       {
@@ -153,17 +157,42 @@ export const getPickupMessageAvailability = async (
           product: partNumber,
           store,
         }),
+        cache: 'no-cache',
+        retry: {
+          limit: 3,
+          delay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+        },
+        timeout: 3000,
+        headers: {
+          'sec-ch-ua':
+            '"Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
+          'sec-ch-ua-mobile': '?0',
+          'sec-ch-ua-platform': '"macOS"',
+          'sec-fetch-dest': 'document',
+          'sec-fetch-mode': 'navigate',
+          'sec-fetch-site': 'none',
+          'sec-fetch-user': '?1',
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+        },
       },
     )
 
     // https://www.apple.com/th/shop/pickup-message-recommendations
     const json = await response.json()
 
-    await new Promise((resolve) => setTimeout(resolve, 200)) // wait for 200 ms
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for 200 ms
 
     return json.body.PickupMessage
   } catch (error) {
-    console.error('Error fetching pickup message availability:', error)
+    if (error instanceof HTTPError) {
+      const json = await error.response.json()
+      const status = error.response.status
+      console.error(
+        `HTTP Error ${status} fetching pickup message availability for locale: ${locale}, part: ${partNumber}, store: ${store}`,
+        json,
+      )
+    }
     return null
   }
 }
