@@ -161,6 +161,10 @@ export const scheduled = async (): Promise<void> => {
 
         partAvailabilitiesMap.push(...availabilitiesMap.values())
       }
+
+      console.log(
+        `Completed checking family: ${family}. Total availabilities found: ${partAvailabilitiesMap.length}`,
+      )
     }
 
     const productsMap = Array.from(familyToProduct.values()).reduce<
@@ -193,6 +197,10 @@ export const scheduled = async (): Promise<void> => {
       )
 
     for (const avail of updatedAvailability) {
+      console.log(
+        `Processing availability for ${avail.partNumber} at store ID ${avail.storeId}: ${avail.isAvailable ? 'Available' : 'Unavailable'} (${avail.availabilityText})`,
+      )
+
       const [before] = await db
         .select()
         .from(productAvailability)
@@ -222,8 +230,16 @@ export const scheduled = async (): Promise<void> => {
       }
 
       if (before && differences.length === 0) {
+        console.log(
+          `No changes for ${avail.partNumber} at store ID ${avail.storeId}, skipping notification.`,
+        )
         continue
       }
+
+      console.log(
+        `Changes detected for ${avail.partNumber} at store ID ${avail.storeId}:`,
+        differences,
+      )
 
       const product = productsMap.get(avail.partNumber)!
 
@@ -247,7 +263,19 @@ export const scheduled = async (): Promise<void> => {
           ),
         )
 
+      if (notiChannels.length === 0) {
+        console.log(
+          'No active notification channels found for this product, skipping notification.',
+        )
+        continue
+      }
+
+      console.log(`Sending notifications to ${notiChannels.length} channels`)
+
       for (const channel of notiChannels) {
+        console.log(
+          `Sending notification via channel ID ${channel.id}: ${channel.name} (${channel.type})`,
+        )
         switch (channel.type) {
           case NotificationChannelType.TELEGRAM: {
             if (!channel.token || !channel.targets.length) {
@@ -287,6 +315,9 @@ export const scheduled = async (): Promise<void> => {
         }
       }
 
+      console.log('Notification processing completed.')
+
+      console.log('Updating availability in the database...')
       const [updatedAvail] = await db
         .insert(productAvailability)
         .values(avail)
@@ -300,6 +331,7 @@ export const scheduled = async (): Promise<void> => {
         })
         .returning()
 
+      console.log('Logging availability change to history table...')
       await db.insert(productAvailabilityHistory).values({
         ...updatedAvail,
         id: undefined,
@@ -307,5 +339,9 @@ export const scheduled = async (): Promise<void> => {
         updatedAt: undefined,
       })
     }
+
+    console.log(`Completed processing for locale: ${locale}`)
   }
+
+  console.log('Scheduled task completed at', new Date().toISOString())
 }
