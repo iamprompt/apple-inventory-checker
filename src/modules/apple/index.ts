@@ -143,7 +143,7 @@ export const getAvailabilityMessageUrl = (
 export const getPickupMessageAvailability = async (
   locale: string = 'th',
   partNumber: string,
-  location: string = '10600',
+  store: string = 'R733' /* Apple Central World */,
 ) => {
   try {
     const response = await ky.get<PickupMessageRecommendations>(
@@ -151,13 +151,15 @@ export const getPickupMessageAvailability = async (
       {
         searchParams: new URLSearchParams({
           product: partNumber,
-          location,
+          store,
         }),
       },
     )
 
     // https://www.apple.com/th/shop/pickup-message-recommendations
     const json = await response.json()
+
+    await new Promise((resolve) => setTimeout(resolve, 200)) // wait for 200 ms
 
     return json.body.PickupMessage
   } catch (error) {

@@ -13,6 +13,7 @@ export const products = pgTable(
   {
     id: serial('id').primaryKey(),
     locale: varchar('locale', { length: 10 }).notNull(),
+    family: varchar('family', { length: 50 }).notNull(),
     basePartNumber: varchar('base_part_number', { length: 10 }).notNull(),
     partNumber: varchar('part_number', { length: 20 }).notNull(),
     capacity: varchar('capacity').notNull(),

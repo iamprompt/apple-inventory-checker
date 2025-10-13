@@ -50,6 +50,20 @@
       "when": 1760253981248,
       "tag": "0006_peaceful_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1760359229965,
+      "tag": "0007_massive_nico_minoru",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1760366448258,
+      "tag": "0008_absent_lila_cheney",
+      "breakpoints": true
     }
   ]
 }

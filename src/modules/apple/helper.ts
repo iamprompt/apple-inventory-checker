@@ -67,34 +67,35 @@ export const mappingProductLocatorMeta = (data: ProductLocatorMeta) => {
   return products
 }
 
-export const processPickupMessageAvailabilityByPartNumber = (
-  partNumber: string,
+export type StoreAvailability = {
+  storeName: string
+  storeNumber: string
+  partNumber: string
+  availabilityText: string
+  isAvailable: boolean
+}
+
+export const processPickupMessageAvailability = (
   data: PickupMessageRecommendations['body']['PickupMessage'],
-) => {
+): StoreAvailability[] => {
   const { stores } = data
 
   if (!stores) {
     return []
   }
 
-  const storeList = stores.map((store) => {
-    const partAvailability = store.partsAvailability[partNumber]
-
-    if (!partAvailability) {
-      return {
-        storeName: store.storeName,
-        storeNumber: store.storeNumber,
-        availabilityText: 'N/A',
-        isAvailable: false,
-      }
-    }
-
-    return {
-      storeName: store.storeName,
-      storeNumber: store.storeNumber,
-      availabilityText: partAvailability.pickupSearchQuote,
-      isAvailable: partAvailability.pickupDisplay === 'available',
-    }
+  const storeList = stores.flatMap((store) => {
+    return Object.entries(store.partsAvailability).map(
+      ([partNumber, partAvail]) => {
+        return {
+          storeName: store.storeName,
+          storeNumber: store.storeNumber,
+          partNumber,
+          availabilityText: partAvail.pickupSearchQuote,
+          isAvailable: partAvail.pickupDisplay === 'available',
+        }
+      },
+    )
   })
 
   return storeList
